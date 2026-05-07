@@ -4,11 +4,14 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.config import settings
 
 # asyncpg драйвер для PostgreSQL
+_db_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://").split("?")[0]
+
 engine = create_async_engine(
-    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+    _db_url,
     echo=False,
-    pool_size=20,
-    max_overflow=10,
+    pool_size=5,
+    max_overflow=5,
+    connect_args={"ssl": "require"},
 )
 
 AsyncSessionLocal = sessionmaker(
