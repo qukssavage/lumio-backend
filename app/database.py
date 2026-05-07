@@ -1,16 +1,20 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from app.config import settings
 
-# asyncpg драйвер для PostgreSQL
-_db_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://").split("?")[0]
+_db_url = (
+    settings.DATABASE_URL
+    .replace("postgresql://", "postgresql+asyncpg://")
+    .split("?")[0]
+)
 
+# NullPool нужен для Supabase pooler (transaction mode)
 engine = create_async_engine(
     _db_url,
     echo=False,
-    pool_size=5,
-    max_overflow=5,
+    poolclass=NullPool,
     connect_args={"ssl": "require"},
 )
 
