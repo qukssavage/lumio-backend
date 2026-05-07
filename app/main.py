@@ -1,3 +1,5 @@
+import logging
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,14 +9,23 @@ from app.database import create_tables
 from app.routers import auth, chats, users, websocket
 from app.services.firebase import init_firebase
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # при старте
-    init_firebase()
-    await create_tables()
+    try:
+        logger.info("Initializing Firebase...")
+        init_firebase()
+        logger.info("Firebase OK")
+        logger.info("Creating tables...")
+        await create_tables()
+        logger.info("Tables OK — startup complete")
+    except Exception as e:
+        logger.exception(f"Startup failed: {e}")
+        raise
     yield
-    # при остановке — ничего не нужно
 
 
 app = FastAPI(title="Lumio API", version="0.1.0", lifespan=lifespan)
