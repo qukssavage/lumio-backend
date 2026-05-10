@@ -42,12 +42,19 @@ async def _build_chat_out(chat: Chat, current_user_id: int, db: AsyncSession) ->
     )
     last_msg = last_msg_res.scalar_one_or_none()
 
+    last_message_text = None
+    if last_msg:
+        if last_msg.type == "image":
+            last_message_text = f"📷 {last_msg.content}" if last_msg.content else "📷 Фото"
+        else:
+            last_message_text = last_msg.content
+
     return ChatOut(
         id=chat.id,
         type=chat.type,
         display_name=display_name,
         display_avatar=display_avatar,
-        last_message=last_msg.content if last_msg else None,
+        last_message=last_message_text,
         last_message_at=last_msg.created_at if last_msg else None,
         unread_count=0,
         other_user_id=other_user_id,
